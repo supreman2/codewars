@@ -5,7 +5,7 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/6kyu_getLengthOfMissingArray" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/5kyu_DirReduction" isTestSource="false" />
-      <sourceFolder url="file://$MODULE_DIR$/RemovedNumbers" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/5kyu_RemovedNumbers" isTestSource="false" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
