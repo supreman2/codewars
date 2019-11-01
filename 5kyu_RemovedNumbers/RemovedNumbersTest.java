@@ -19,16 +19,4 @@ public class RemovedNumbersTest {
         List<long[]> a = RemovedNumbers.removNb(100);
         assertTrue(res.size() == a.size());
     }
-//    @Test
-//    public void test14() {
-//        List<long[]> res = new ArrayList<long[]>();
-//        List<long[]> a = RemovedNumbers.removNb(100);
-//        assertTrue(res.size() == a.size());
-//    }
-//    @Test
-//    public void test14() {
-//        List<long[]> res = new ArrayList<long[]>();
-//        List<long[]> a = RemovedNumbers.removNb(100);
-//        assertTrue(res.size() == a.size());
-//    }
 }
