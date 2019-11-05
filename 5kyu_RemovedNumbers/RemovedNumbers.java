@@ -10,12 +10,25 @@ public class RemovedNumbers {
         List<long[]> res1 = removNb(325);
         List<long[]> res2 = removNb(1000003);
 
-        for (int i=1;i<200;i++) {
-            System.out.println("n = " + i + ": ");
+        for (int i=1;i<400;i++) {
+
+            System.out.println("*** n = " + i + ": ");
             List<long[]> res = removNb(i);
+
+            res.stream().flatMap(t->Arrays.stream(t).boxed()).forEach(System.out::print);
+            System.out.println();
+
             //res.forEach(el->{Arrays.stream(el).forEach(System.out::print); /*System.out.println("");*/});
             //res.forEach(el->{Arrays.stream(el).collect(Collectors.joining(",")); /*System.out.println("");*/});
             res.forEach(el->{System.out.println(Arrays.toString(el));});
+
+            res.stream().forEach(t->{
+                System.out.print("< ");
+                Arrays.stream(t).boxed().forEach(el-> {
+                    System.out.print(el); System.out.print(" ");
+                });
+                System.out.println(">");
+            });
 
             //res.forEach(el->{System.out.println(Arrays.stream(el).map(ex->Long.toString(ex)).collect(Collectors.joining(","))toString(el));});
 
