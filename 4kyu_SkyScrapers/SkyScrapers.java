@@ -76,10 +76,10 @@ public class SkyScrapers {
             // самый высокий не может быть ближе ключа
             int max = size;
             while (key != 0) {
-                if (key == 1) {
-                    res[0] = new ArrayList<Integer>(List.of(max));
-                    break;
-                }
+//                if (key == 1) {
+//                    res[0] = new ArrayList<Integer>(List.of(Integer.valueOf(max)));
+//                    break;
+//                }
                 for (int i = 0; i < key - 1; i++) {
                     res[i].remove(Integer.valueOf(max));
                 }
