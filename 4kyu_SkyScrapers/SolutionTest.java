@@ -25,7 +25,7 @@ public class SolutionTest {
                     { 1, 3, 2, 4 } }
     };
 
-    @Test
+    //@Test
     public void testSolvePuzzle1() {
         Assert.assertEquals(SkyScrapers.solvePuzzle(clues[0]), outcomes[0]);
     }

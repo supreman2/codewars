@@ -31,6 +31,17 @@ public class SkyScrapers {
 
         }
 
+        public Sol clone() {
+            Sol res = new Sol(size);
+            for (int r = 0; r < size; r++) {
+                for (int c = 0; c < size; c++) {
+                    ArrayList<Integer> cell = (ArrayList) this.arwork[r][c];
+                    res.arwork[r][c] = (ArrayList) cell.clone();
+                }
+            }
+            return res;
+        }
+
         public ArrayList[] getR(int n, int order) {
             ArrayList[] res = new ArrayList[size];
             if (order == -1) {
@@ -134,7 +145,9 @@ public class SkyScrapers {
             // правило #4
             // если первая ячейка 1/2, а вторая 1/2/3 и ключ 1, то в первой не может быть 1, а может быть только 2.
             // т.е. при ключе 1, в первой ячейке нужно оставить только те значения, которые строго выше хоть одного из второй ячейки.
-
+            // а во второй ячейке не может быть 3, иначе ключ был бы 2, а не 1
+            // не понятно, как формализовать это правило для общего случая, когда топчик посередине, например,
+            // 1/2/3, 4, 1/2/3, 1/2 и ключ справа 2.
 
 
             // правило #5
@@ -169,13 +182,88 @@ public class SkyScrapers {
             return true;
         }
 
-        public boolean isSolved() {
+        public boolean isSolved() { // это проверка корректна до тех пор, пока мы удаляем элементы по правилам
+            // в случае, когда мы начинаем выборочно удалять элементы, можно тут получить Истину, хотя ключи при этом не будут выполнены.
+            // нужна новая проверка именно по ключам.
             for (int r = 0; r < size; r++) {
                 for (int c = 0; c < size; c++) {
                     ArrayList<Integer> cell = (ArrayList) arwork[r][c];
-                    if(cell.size() != 1) return false;
+                    if (cell.size() != 1) return false;
                 }
             }
+            return true;
+        }
+
+        public boolean isSolvedByClues(int[] clues) {
+
+            for (int i = 0; i < size; i++) {
+                if (clues[i] == 0) continue;
+                int c = i;
+                ArrayList[] in = getC(c, 1);
+                int cur_clue = 0;
+                int cur_max = 0;
+                for (int j = 0; j < size; j++) {
+                    if (in[j].size() != 1) return false;
+                    Integer val = (Integer) in[j].get(0);
+                    if (val.intValue() > cur_max) {
+                        cur_clue++;
+                        cur_max = val;
+                    }
+                }
+                if (cur_clue != clues[i]) return false;
+            }
+
+            for (int i = size; i < size * 2; i++) {
+                if (clues[i] == 0) continue;
+                int r = i - size;
+                ArrayList[] in = getR(r, -1);
+                int cur_clue = 0;
+                int cur_max = 0;
+                for (int j = 0; j < size; j++) {
+                    if (in[j].size() != 1) return false;
+                    Integer val = (Integer) in[j].get(0);
+                    if (val.intValue() > cur_max) {
+                        cur_clue++;
+                        cur_max = val;
+                    }
+                }
+                if (cur_clue != clues[i]) return false;
+            }
+
+            for (int i = size * 2; i < size * 3; i++) {
+                if (clues[i] == 0) continue;
+                int c = size * 3 - 1 - i;
+                ArrayList[] in = getC(c, -1);
+                int cur_clue = 0;
+                int cur_max = 0;
+                for (int j = 0; j < size; j++) {
+                    if (in[j].size() != 1) return false;
+                    Integer val = (Integer) in[j].get(0);
+                    if (val.intValue() > cur_max) {
+                        cur_clue++;
+                        cur_max = val;
+                    }
+                }
+                if (cur_clue != clues[i]) return false;
+            }
+
+            for (int i = size * 3; i < size * 4; i++) {
+                if (clues[i] == 0) continue;
+                int r = size * 4 - 1 - i;
+                ArrayList[] in = getR(r, 1);
+                int cur_clue = 0;
+                int cur_max = 0;
+                for (int j = 0; j < size; j++) {
+                    if (in[j].size() != 1) return false;
+                    Integer val = (Integer) in[j].get(0);
+                    if (val.intValue() > cur_max) {
+                        cur_clue++;
+                        cur_max = val;
+                    }
+                }
+                if (cur_clue != clues[i]) return false;
+            }
+
             return true;
         }
 
@@ -195,6 +283,75 @@ public class SkyScrapers {
 
         }
 
+        public int[][] printArray() {
+            int[][] res = getArray();
+            for (int j = 0; j < size; j++) {
+                int[] row = res[j];
+                System.out.println(Arrays.toString(row));
+            }
+            return res;
+        }
+
+        public int tryToSolvePuzzle(int[] clues) {
+
+            int steps = 0;
+
+            while (true) {
+
+                if (steps == size * size) {
+                    // System.out.printf("- Решение НЕ найдено, превышено число шагов %d", steps);
+                    return -1; // превышен лимит шагов
+                }
+
+                steps++;
+
+                boolean changed = false;
+
+                for (int i = 0; i < size; i++) {
+                    int c = i;
+                    ArrayList[] in = getC(c, 1);
+                    ArrayList[] out = simplify(in, clues[i]);
+                    if (!equals(in, out)) {
+                        setC(c, 1, out);
+                        changed = true;
+                    }
+                }
+
+                for (int i = size; i < size * 2; i++) {
+                    int r = i - size;
+                    ArrayList[] in = getR(r, -1);
+                    ArrayList[] out = simplify(in, clues[i]);
+                    if (!equals(in, out)) {
+                        setR(r, -1, out);
+                        changed = true;
+                    }
+                }
+
+                for (int i = size * 2; i < size * 3; i++) {
+                    int c = size * 3 - 1 - i;
+                    ArrayList[] in = getC(c, -1);
+                    ArrayList[] out = simplify(in, clues[i]);
+                    if (!equals(in, out)) {
+                        setC(c, -1, out);
+                        changed = true;
+                    }
+                }
+
+                for (int i = size * 3; i < size * 4; i++) {
+                    int r = size * 4 - 1 - i;
+                    ArrayList[] in = getR(r, 1);
+                    ArrayList[] out = simplify(in, clues[i]);
+                    if (!equals(in, out)) {
+                        setR(r, 1, out);
+                        changed = true;
+                    }
+                }
+
+                if (!changed) return steps;
+
+            }
+        }
+
     }
 
     public static void main(String[] args) {
@@ -207,76 +364,53 @@ public class SkyScrapers {
 
         Sol sol = new Sol(size);
 
-        int steps = 0;
-
-        while (true) {
-
-            steps++;
-
-            boolean changed = false;
-
-            for (int i = 0; i < size; i++) {
-                int c = i;
-                ArrayList[] in = sol.getC(c, 1);
-                ArrayList[] out = sol.simplify(in, clues[i]);
-                if (!sol.equals(in, out)) {
-                    sol.setC(c, 1, out);
-                    changed = true;
-                }
-            }
-
-            for (int i = size; i < size * 2; i++) {
-                int r = i - size;
-                ArrayList[] in = sol.getR(r, -1);
-                ArrayList[] out = sol.simplify(in, clues[i]);
-                if (!sol.equals(in, out)) {
-                    sol.setR(r, -1, out);
-                    changed = true;
-                }
-            }
-
-            for (int i = size * 2; i < size * 3; i++) {
-                int c = size * 3 - 1 - i;
-                ArrayList[] in = sol.getC(c, -1);
-                ArrayList[] out = sol.simplify(in, clues[i]);
-                if (!sol.equals(in, out)) {
-                    sol.setC(c, -1, out);
-                    changed = true;
-                }
-            }
-
-
-            for (int i = size * 3; i < size * 4; i++) {
-                int r = size * 4 - 1 - i;
-                ArrayList[] in = sol.getR(r, 1);
-                ArrayList[] out = sol.simplify(in, clues[i]);
-                if (!sol.equals(in, out)) {
-                    sol.setR(r, 1, out);
-                    changed = true;
-                }
-            }
-
-            if (!changed) break;
-
-            if (steps == size * size) {
-                System.out.printf("- Решение НЕ найдено, превышено число шагов %d", steps);
-                return new int[0][0];
-            }
-
-        }
+        int steps = sol.tryToSolvePuzzle(clues);
 
         if (sol.isSolved()) {
             System.out.printf("+ Решение найдено за %d шагов%n", steps);
-            int[][] res = sol.getArray();
-            for (int i = 0; i < size; i++) {
-                int[] row = res[i];
-                System.out.println(Arrays.toString(row));
-            }
+            int[][] res = sol.printArray();
             return res;
-        } else {
-            System.out.printf("- Решение НЕ найдено за %d шагов, но изменений больше не происходит, нужны новые правила", steps);
-            return new int[0][0];
         }
+
+        System.out.printf("...начинаем тупое удаление элементов и попытку решить без них%n");
+
+        int cur_min = size;
+        int r_min = -1, c_min = -1;
+
+        for (int r = 0; r < size; r++) {
+            for (int c = 0; c < size; c++) {
+
+                ArrayList<Integer> cell = (ArrayList) sol.arwork[r][c];
+
+                if (cell.size() == 1) continue;
+
+                if (cell.size() < cur_min) {
+                    r_min = r;
+                    c_min = c;
+                    cur_min = cell.size();
+                }
+            }
+        }
+
+        ArrayList<Integer> cell = (ArrayList) sol.arwork[r_min][c_min];
+
+        Sol solClone = sol.clone();
+
+        for (int i = 0; i < cell.size(); i++) {
+            ArrayList<Integer> cellClone = (ArrayList) cell.clone();
+            int value = cellClone.get(i);
+            cellClone.remove(i);
+            solClone.arwork[r_min][c_min] = cellClone;
+            solClone.tryToSolvePuzzle(clues);
+            if (solClone.isSolvedByClues(clues)) {
+                System.out.printf("+ Решение найдено после удаления значения %d из R%dC%d%n", value, r_min, c_min);
+                int[][] res = solClone.printArray();
+                return res;
+            }
+        }
+
+        System.out.printf("- Решение НЕ найдено! Ничего не помогло!!!");
+        return new int[0][0];
 
     }
 
